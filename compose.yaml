@@ -1,12 +1,18 @@
 services:
   # Base image containing dependencies.
   simulation:
-    image: robo_racer
+    # Can pull the image using docker registry (docker login registry.gitlab.com)
+    image: registry.gitlabcom/grimbergen_robotics/rostemplates:0.0
+    # Or build it
+    # Comment part below to pull image instead of build yourself
+    # -------------- start docker image build
     build:
       context: .
       dockerfile: docker/Dockerfile
       args:
         ROS_DISTRO: humble
+    # -------------- end docker image build
+
     # Interactive shell
     stdin_open: true
     tty: true
