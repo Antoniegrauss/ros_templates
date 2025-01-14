@@ -10,12 +10,14 @@
 # See https://docs.gitlab.com/ee/ci/yaml/index.html for all available options
 
 # you can delete this line if you're not using Docker
-image: $CI_REGISTRY/grimbergen_robotics/rostemplates:0.0
+image: 
+  name: $CI_REGISTRY/grimbergen_robotics/rostemplates:0.0
+  entrypoint: [""]
 
 before_script:
-  - echo "Before script section"
-  - echo "For example you might run an update here or install a build dependency"
-  - echo "Or perhaps you might print out some debugging details"
+  - rosdep update
+  - rosdep install --from-paths src/ --ignore-src --rosdistro ${ROS_DISTRO} -y
+  - source /opt/ros/humble/setup.bash
 
 after_script:
   - echo "After script section"
@@ -24,7 +26,4 @@ after_script:
 build:
   stage: build
   script:
-    - ls
-    - cd ros_templates
-    - source /opt/ros/humble/setup.bash
     - colcon build
