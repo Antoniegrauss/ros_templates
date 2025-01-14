@@ -21,16 +21,14 @@ ENV SHELL /bin/bash
 
 # Copy workspace
 # TODO: Could also mount workspace instead of copying
+# COPY --chown=$USERNAME:$USER_GID ./src/ src/
 RUN mkdir -p /ros_templates/src
 RUN chown -R $USERNAME /ros_templates
 WORKDIR /ros_templates/
-COPY --chown=$USERNAME:$USER_GID ./src/ src/
 
 # Installing dependencies
 RUN apt-get install -y \
     ros-${ROS_DISTRO}-realsense2-camera
-RUN rosdep update
-RUN rosdep install --from-paths . --ignore-src --rosdistro ${ROS_DISTRO} -y
 RUN apt-get install -y \
     ros-${ROS_DISTRO}-gazebo-ros* \
     ros-${ROS_DISTRO}-turtlesim \
@@ -41,7 +39,6 @@ RUN apt-get install -y \
     wget \
     python3-pip \
     terminator
-
 
 # Try to fix sound
 RUN mkdir /etc/modprobe.d
