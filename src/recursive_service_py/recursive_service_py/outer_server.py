@@ -13,6 +13,11 @@ class RecursiveServerNode(Node):
     def __init__(self):
         super().__init__("outer_server")
         self.server_ = self.create_service(AddTwoInts, 
+            "outer_server_async", 
+            self.serviceCallbackAsync, 
+            callback_group=ReentrantCallbackGroup()
+        )
+        self.server_ = self.create_service(AddTwoInts, 
             "outer_server", 
             self.serviceCallback, 
             callback_group=ReentrantCallbackGroup()
@@ -29,6 +34,18 @@ class RecursiveServerNode(Node):
         return self.callAddTwoIntsService(request, response)
 
     def callAddTwoIntsService(self, request, response):       
+        future = self.client.call_async(request=request)
+        
+        rclpy.spin_until_future_complete(self, future)
+        
+        response = future.result()
+        return response
+    
+    def serviceCallbackAsync(self, request, response):
+        self.get_logger().info("Calling outer service asynchronously (server side)")
+        return self.callAddTwoIntsServiceAsync(request, response)
+    
+    def callAddTwoIntsServiceAsync(self, request, response):       
         future = self.client.call_async(request=request)
         future.add_done_callback(partial(self.addTwoIntsCallback, response=response))
            
