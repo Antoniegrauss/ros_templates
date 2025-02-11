@@ -1,0 +1,50 @@
+{
+  "name": "humble desktop",
+  "privileged": true,
+  "image": "registry.gitlab.com/grimbergen_robotics/rostemplates:0.0",
+  "runArgs": [
+    "--net=host",
+    "--pid=host",
+    "--ipc=host",
+    "-e", "DISPLAY=${env:DISPLAY}"
+  ],
+  "customizations": {
+    "vscode": {
+      "extensions":[
+        // Optional VS Code extensions
+          "ms-vscode.cpptools",
+          "ms-vscode.cpptools-themes",
+          "ms-vscode.cmake-tools",
+          "twxs.cmake",
+          "donjayamanne.python-extension-pack",
+          "eamodio.gitlens",
+          "ms-azuretools.vscode-docker",
+          "mhutchie.git-graph",
+          "ms-vscode.cpptools-extension-pack",
+          "ms-vscode.cmake-tools",
+          "nonanonno.vscode-ros2"
+      ]
+    }
+  },
+  "workspaceMount": "source=${localWorkspaceFolder},target=/${localWorkspaceFolderBasename},type=bind",
+  "workspaceFolder": "/${localWorkspaceFolderBasename}",
+  "mounts": [
+    // Keep bash history between sessions
+    "source=${localEnv:HOME}${localEnv:USERPROFILE}/.bash_history,target=/home/vscode/.bash_history,type=bind",
+    // Enable GUI applications
+    "source=/tmp/.X11-unix,target=/tmp/.X11-unix,type=bind,consistency=cached",
+    "source=/dev/dri,target=/dev/dri,type=bind,consistency=cached",
+    // Only use for building the ros bridge inside this container once
+    // Then remove it for security reasons
+    "source=/var/run/docker.sock,target=/var/run/docker.sock,type=bind,consistency=cached",
+    // Add special ssh config to container (forwards ssh via altssh over port 443)
+    "source=${localEnv:HOME}/.ssh/config,target=/home/ubuntu/.ssh/config,type=bind,consistency=cached",
+    "source=${localEnv:HOME}/.gitconfig,target=/home/ubuntu/.gitconfig,type=bind,consistency=cached"
+  ],
+  "containerEnv": {
+    "DISPLAY": "unix:0",
+    "ROS_LOCALHOST_ONLY": "1",
+    "ROS_DOMAIN_ID": "42"
+  },
+  "postCreateCommand": "sudo rosdep update && sudo rosdep install --from-paths src --ignore-src -y"
+}
