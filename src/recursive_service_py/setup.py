@@ -1,4 +1,6 @@
 from setuptools import find_packages, setup
+import os
+from glob import glob
 
 package_name = 'recursive_service_py'
 
@@ -10,6 +12,7 @@ setup(
         ('share/ament_index/resource_index/packages',
             ['resource/' + package_name]),
         ('share/' + package_name, ['package.xml']),
+        (os.path.join('share', package_name, 'launch'), glob('launch/*.py')),
     ],
     install_requires=['setuptools'],
     zip_safe=True,
@@ -20,8 +23,9 @@ setup(
     tests_require=['pytest'],
     entry_points={
         'console_scripts': [
-            "add_two_ints_server = recursive_service_py.add_two_ints_server:main",
-            "recursive_server = recursive_service_py.recursive_server:main",
+            "inner_server = recursive_service_py.inner_server:main",
+            "outer_client = recursive_service_py.outer_client:main",
+            "outer_server = recursive_service_py.outer_server:main",
         ],
     },
 )

@@ -6,8 +6,8 @@ from example_interfaces.srv import AddTwoInts
 
 class AddTwoIntsServerNode(Node):
     def __init__(self):
-        super().__init__("add_two_ints_server")
-        self.server_ = self.create_service(AddTwoInts, "add_two_ints", self.serviceCallback)
+        super().__init__("inner_server")
+        self.server_ = self.create_service(AddTwoInts, "inner_server", self.serviceCallback)
 
     def serviceCallback(self, request, response):
         self.get_logger().info("Inside inner service")
