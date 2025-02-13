@@ -9,8 +9,10 @@ This requires the top-level service to:
 The service callback has to be exited to execute the nested
 service. Then re-entered to send the response.
 
-A synchronization mechanism is also added inside the callback
-of the `recursive_service` node to return the response after
+If the inner service is called asynchronously, then an
+additional synchronization mechanism is needed.
+This synchronization mechanism is added inside the callback
+of the `outer_service` node to return the response after
 handling the inner function.
 
 ## Order of execution
