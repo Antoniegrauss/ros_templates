@@ -9,11 +9,9 @@ This requires the top-level service to:
 The service callback has to be exited to execute the nested
 service. Then re-entered to send the response.
 
-If the inner service is called asynchronously, then an
-additional synchronization mechanism is needed.
-This synchronization mechanism is added inside the callback
-of the `outer_service` node to return the response after
-handling the inner function.
+Also note that the `spin_until_future_complete` call has to be
+called on the `executor`. So the executor has to be passed to
+the node as argument.
 
 ## Order of execution
 

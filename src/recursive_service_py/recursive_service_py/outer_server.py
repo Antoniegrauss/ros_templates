@@ -1,6 +1,5 @@
 #!/usr/bin/env python3
 from functools import partial
-import threading
 
 import rclpy
 from rclpy.node import Node
@@ -10,13 +9,9 @@ from rclpy.callback_groups import ReentrantCallbackGroup
 from example_interfaces.srv import AddTwoInts
 
 class RecursiveServerNode(Node):
-    def __init__(self):
+    def __init__(self, executor):
         super().__init__("outer_server")
-        self.server_ = self.create_service(AddTwoInts, 
-            "outer_server_async", 
-            self.serviceCallbackAsync, 
-            callback_group=ReentrantCallbackGroup()
-        )
+        self.executor = executor
         self.server_ = self.create_service(AddTwoInts, 
             "outer_server", 
             self.serviceCallback, 
@@ -27,49 +22,21 @@ class RecursiveServerNode(Node):
         while not self.client.wait_for_service(1.0):
             self.get_logger().info("Waiting for inner service to connect")
         
-        self.response_ready = threading.Event()  # Event to signal when response is ready
-
     def serviceCallback(self, request, response):
         self.get_logger().info("Calling outer service (server side)")
         return self.callAddTwoIntsService(request, response)
 
     def callAddTwoIntsService(self, request, response):       
         future = self.client.call_async(request=request)
-        
-        rclpy.spin_until_future_complete(self, future)
+        self.executor.spin_until_future_complete(future)
         
         response = future.result()
         return response
-    
-    def serviceCallbackAsync(self, request, response):
-        self.get_logger().info("Calling outer service asynchronously (server side)")
-        return self.callAddTwoIntsServiceAsync(request, response)
-    
-    def callAddTwoIntsServiceAsync(self, request, response):       
-        future = self.client.call_async(request=request)
-        future.add_done_callback(partial(self.addTwoIntsCallback, response=response))
-           
-        # Block until the response is ready
-        self.response_ready.wait()           
-                
-        self.get_logger().info("Returning result from outer service")
-        self.get_logger().info("Sum = " + str(response.sum))
-        
-        return response
-
-    def addTwoIntsCallback(self, future, response):
-        try:
-            response = future.result()
-            self.get_logger().info("Inner service result: " + str(response.sum))
-        except Exception as e:
-            self.get_logger().error(f"Service call failed {e}")
             
-        self.response_ready.set()
-
 def main(args=None):
     rclpy.init(args=args)
     executor = MultiThreadedExecutor()
-    node = RecursiveServerNode()
+    node = RecursiveServerNode(executor)
     executor.add_node(node)
     executor.spin()
     rclpy.shutdown()
